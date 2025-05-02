@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.cryptoapp.common.UiState
 import com.example.cryptoapp.presentation.theme.Typography
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -41,12 +40,9 @@ fun CoinDetailScreen(
 
     val coinDetailState by viewModel.coinDetailUiState.collectAsState()
 
+    Box(modifier = Modifier.fillMaxSize()) {
 
-    when (val state = coinDetailState) {
-        is UiState.Success -> {
-
-            val coinDetail = state.data
-
+        coinDetailState.coinDetail?.let { coinDetail ->
             LazyColumn(
                 Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(20.dp)
@@ -114,30 +110,22 @@ fun CoinDetailScreen(
             }
         }
 
-        is UiState.Error -> {
-            Box(
+        if (coinDetailState.error.isNotEmpty()) {
+            Text(
+                text = coinDetailState.error,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = state.message,
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .align(Alignment.Center)
-                )
-            }
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .align(Alignment.Center)
+            )
         }
 
-        is UiState.Loading -> {
-            Box(modifier = Modifier.fillMaxSize()) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
+        if (coinDetailState.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
+
     }
 
 }
