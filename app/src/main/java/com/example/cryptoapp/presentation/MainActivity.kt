@@ -16,21 +16,10 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    //private lateinit var coinsViewModel: CoinsViewModel
-    //private lateinit var mainRepository: MainRepository
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //val apiService = ApiClient.apiService
-        //mainRepository = MainRepositoryImpl(apiService)
-        //val coinsFactory = CoinsViewModelFactory(mainRepository)
-        //coinsViewModel = ViewModelProvider(this, coinsFactory)[CoinsViewModel::class.java]
-
         setContent {
-
-            //val coinsState by coinsViewModel.coinsUiState.collectAsState()
-
             CryptoAppTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
