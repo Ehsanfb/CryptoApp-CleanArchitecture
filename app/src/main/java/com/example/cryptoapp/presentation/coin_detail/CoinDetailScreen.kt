@@ -29,6 +29,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.cryptoapp.presentation.theme.Typography
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.cryptoapp.presentation.coin_detail.components.CoinTag
+import com.example.cryptoapp.presentation.coin_detail.components.TeamListItem
 
 
 @OptIn(ExperimentalLayoutApi::class)
