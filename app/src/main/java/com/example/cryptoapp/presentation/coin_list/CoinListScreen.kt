@@ -18,8 +18,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.cryptoapp.common.UiState
 import com.example.cryptoapp.presentation.Screen
+import com.example.cryptoapp.presentation.coin_list.components.CoinListItem
 
 @Composable
 fun CoinListScreen(
@@ -28,43 +28,34 @@ fun CoinListScreen(
     /*coinsState: UiState<List<Coin>>,*/
 ) {
 
-    val coinsState by viewModel.coinsUiState.collectAsState()
+    val coinsState by viewModel.coinsState.collectAsState()
 
-    when (val state = coinsState) {
-        is UiState.Success -> {
-            LazyColumn(Modifier.fillMaxSize()) {
-                items(state.data) { coin ->
-                    CoinListItem(coin, onItemClicked = {
-                        navController.navigate(Screen.CoinDetails.name + "/${coin.id}")
-                    })
-                }
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        LazyColumn(Modifier.fillMaxSize()) {
+            items(coinsState.coins) { coin ->
+                CoinListItem(coin, onItemClicked = {
+                    navController.navigate(Screen.CoinDetails.name + "/${coin.id}")
+                })
             }
         }
 
-        is UiState.Error -> {
-            Box(
+        if (coinsState.error.isNotEmpty()) {
+            Text(
+                text = coinsState.error,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = state.message,
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .align(Alignment.Center)
-                )
-            }
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .align(Alignment.Center)
+            )
         }
 
-        is UiState.Loading -> {
-            Box(modifier = Modifier.fillMaxSize()) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
+        if (coinsState.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
+
     }
 
 }

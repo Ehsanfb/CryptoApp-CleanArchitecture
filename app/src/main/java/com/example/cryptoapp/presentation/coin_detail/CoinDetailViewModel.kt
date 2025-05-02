@@ -5,22 +5,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cryptoapp.common.Constants
 import com.example.cryptoapp.common.UiState
-import com.example.cryptoapp.domain.repository.MainRepository
-import com.example.cryptoapp.domain.model.CoinDetail
+import com.example.cryptoapp.domain.use_case.get_coin.GetCoinDetailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
 class CoinDetailViewModel @Inject constructor(
-    private val mainRepository: MainRepository,
+    private val getCoinDetailUseCase: GetCoinDetailUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _coinDetailUiState = MutableStateFlow<UiState<CoinDetail>>(UiState.Loading)
-    val coinDetailUiState: StateFlow<UiState<CoinDetail>> = _coinDetailUiState
+    private val _coinDetailUiState = MutableStateFlow(CoinDetailState())
+    val coinDetailUiState: StateFlow<CoinDetailState> = _coinDetailUiState
 
     init {
         savedStateHandle.get<String>(Constants.PARAM_COIN_ID)?.let {
@@ -29,17 +29,21 @@ class CoinDetailViewModel @Inject constructor(
     }
 
     private fun getCoinDetail(coinId: String) {
-        viewModelScope.launch {
+        getCoinDetailUseCase(coinId).onEach { result ->
+            _coinDetailUiState.value = when (result) {
+                is UiState.Success -> {
+                    CoinDetailState(coinDetail = result.data)
+                }
 
-            try {
-                val result = mainRepository.getCoinDetail(coinId).toCoinDetail()
-                _coinDetailUiState.value = UiState.Success(result)
-            } catch (exception: Exception) {
-                _coinDetailUiState.value =
-                    UiState.Error(exception.message ?: "An Unknown Error Occurred")
+                is UiState.Error -> {
+                    CoinDetailState(error = result.message)
+                }
+
+                is UiState.Loading -> {
+                    CoinDetailState(isLoading = true)
+                }
             }
-
-        }
+        }.launchIn(viewModelScope)
     }
 
 }
