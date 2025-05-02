@@ -1,0 +1,16 @@
+# Gradle files
+.gradle/
+build/
+
+# Android Studio files
+.idea/
+
+# User-specific files
+*.iml
+*.log
+
+# Git files
+.git/
+
+# Other OS-specific files
+.DS_Store
