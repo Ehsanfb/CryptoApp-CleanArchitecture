@@ -1,4 +1,4 @@
-package com.example.cryptoapp.presentation.coin_detail
+package com.example.cryptoapp.presentation.coin_detail.components
 
 import android.util.Log
 import androidx.compose.foundation.border
