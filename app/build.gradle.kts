@@ -54,6 +54,7 @@ val gsonVersion = "2.11.0"
 val rxjavaVersion = "3.1.5"
 val rxandroidVersion = "3.0.0"
 val hiltVersion = "2.51.1"
+val pagingVersion = "3.2.1"
 
 dependencies {
     // Lifecycle
@@ -94,6 +95,10 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("com.google.dagger:hilt-android:$hiltVersion")
     ksp("com.google.dagger:hilt-compiler:$hiltVersion")
+
+    // Paging
+    implementation("androidx.paging:paging-runtime:$pagingVersion")
+    implementation("androidx.paging:paging-compose:$pagingVersion")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
