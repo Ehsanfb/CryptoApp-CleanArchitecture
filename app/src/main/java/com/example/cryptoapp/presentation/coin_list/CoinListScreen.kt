@@ -63,7 +63,6 @@ fun CoinListScreen(
                         item {
                             CircularProgressIndicator(
                                 modifier = Modifier
-                                    .fillMaxWidth()
                                     .padding(16.dp)
                             )
                         }
