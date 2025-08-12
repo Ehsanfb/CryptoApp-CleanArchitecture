@@ -8,6 +8,9 @@ plugins {
     id("com.google.devtools.ksp")
 
     kotlin("kapt")
+
+    id("com.google.gms.google-services")
+    id("com.google.firebase.appdistribution")
 }
 
 android {
@@ -109,6 +112,9 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
 
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
+    implementation("com.google.firebase:firebase-analytics")
 
 }
 

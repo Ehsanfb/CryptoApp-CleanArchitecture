@@ -26,3 +26,13 @@ jobs:
 
       - name: Run unit tests
         run: ./gradlew clean testDebug
+
+
+      - name: Build app
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
