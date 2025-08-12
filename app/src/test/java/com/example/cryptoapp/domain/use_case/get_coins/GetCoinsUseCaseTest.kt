@@ -9,6 +9,7 @@ import com.example.cryptoapp.domain.use_case.get_coin.GetCoinDetailUseCase
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.*
 import org.junit.Test
 import org.mockito.Mockito.*
@@ -81,7 +82,7 @@ class GetCoinDetailUseCaseTest {
         // Arrange
         whenever(repository.getCoinDetail("bitcoin")).thenThrow(
             HttpException(
-                Response.error<Any>(404, ResponseBody.create(null, ""))
+                Response.error<Any>(404, "".toResponseBody(null))
             )
         )
 
