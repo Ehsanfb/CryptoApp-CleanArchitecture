@@ -1,96 +1,98 @@
 package com.example.cryptoapp.domain.use_case.get_coins
 
-import com.example.cryptoapp.domain.use_case.get_coin.GetCoinDetailUseCase
-
 
 import com.example.cryptoapp.common.UiState
-import com.example.cryptoapp.data.remote.dto.CoinDetailDto
-import com.example.cryptoapp.domain.model.CoinDetail
+import com.example.cryptoapp.data.remote.dto.CoinDto
+import com.example.cryptoapp.domain.model.Coin
 import com.example.cryptoapp.domain.repository.MainRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import okhttp3.ResponseBody.Companion.toResponseBody
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.*
-import retrofit2.HttpException
-import retrofit2.Response
-import java.io.IOException
 
-class GetCoinDetailUseCaseTest {
 
-    private val repository = mock(MainRepository::class.java)
-    private val getCoinDetailUseCase = GetCoinDetailUseCase(repository)
+@OptIn(ExperimentalCoroutinesApi::class)
+class GetCoinsUseCaseTest {
 
-    private val coinDetailDto = CoinDetailDto(
-        id = "bitcoin",
-        name = "Bitcoin",
-        description = "Bitcoin is a decentralized digital currency.",
-        symbol = "BTC",
-        rank = 1,
-        isActive = true,
-        tags = listOf(
-            CoinDetailDto.Tag(id = "1", name = "cryptocurrency"),
-            CoinDetailDto.Tag(id = "2", name = "store of value")
-        ),
-        team = listOf(
-            CoinDetailDto.Team(id = "1", name = "Satoshi Nakamoto", position = "Founder"),
-            CoinDetailDto.Team(id = "2", name = "John Doe", position = "Developer")
-        )
-    )
+    private val testDispatcher = StandardTestDispatcher()
+    private lateinit var repository: MainRepository
+    private lateinit var getCoinsUseCase: GetCoinsUseCase
 
-    private val expectedCoinDetail: CoinDetail = coinDetailDto.toCoinDetail()
+    @Before
+    fun setup() {
+        Dispatchers.setMain(testDispatcher)
+        repository = mock(MainRepository::class.java)
+        getCoinsUseCase = GetCoinsUseCase(repository)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
 
     @Test
-    fun `invoke emits Loading then Success when data is retrieved`() = runTest {
+    fun `invoke emits Loading then Success when coins are fetched`() = runTest {
         // Arrange
-        `when`(repository.getCoinDetail("bitcoin")).thenReturn(coinDetailDto)
+        val coinDtoList = listOf(
+            CoinDto("bitcoin", true, "Bitcoin", 1, "BTC"),
+            CoinDto("ethereum", true, "Ethereum", 2, "ETH")
+        )
 
-        val result = mutableListOf<UiState<CoinDetail>>()
+        `when`(repository.getCoins()).thenReturn(coinDtoList)
+
+        val result = mutableListOf<UiState<List<Coin>>>()
 
         // Act
-        getCoinDetailUseCase("bitcoin").toList(result)
+        getCoinsUseCase().toList(result)
 
         // Assert
         assertTrue(result[0] is UiState.Loading)
         assertTrue(result[1] is UiState.Success)
-        assertEquals(expectedCoinDetail, (result[1] as UiState.Success).data)
+
+        val coins = (result[1] as UiState.Success).data
+        assertEquals(2, coins.size)
+        assertEquals("Bitcoin", coins[0].name)
+        assertEquals("Ethereum", coins[1].name)
     }
 
     @Test
-    fun `invoke emits Loading then Error when IOException is thrown`() = runTest {
+    fun `invoke emits Loading then Error when exception is thrown`() = runTest {
         // Arrange
-        `when`(repository.getCoinDetail("bitcoin")).thenThrow(IOException("No internet"))
+        `when`(repository.getCoins()).thenThrow(RuntimeException("Something went wrong"))
 
-        val result = mutableListOf<UiState<CoinDetail>>()
+        val result = mutableListOf<UiState<List<Coin>>>()
 
         // Act
-        getCoinDetailUseCase("bitcoin").toList(result)
+        getCoinsUseCase().toList(result)
 
         // Assert
         assertTrue(result[0] is UiState.Loading)
         assertTrue(result[1] is UiState.Error)
-        assertEquals(
-            "Couldn't reach server. Check your internet connection.",
-            (result[1] as UiState.Error).message
-        )
+        assertEquals("Something went wrong.", (result[1] as UiState.Error).message)
     }
 
     @Test
-    fun `invoke emits Loading then Error when HttpException is thrown`() = runTest {
+    fun `invoke emits Loading then Success with empty list`() = runTest {
         // Arrange
-        val httpException = HttpException(Response.error<Any>(404, "".toResponseBody(null)))
-        `when`(repository.getCoinDetail("bitcoin")).thenThrow(httpException)
+        `when`(repository.getCoins()).thenReturn(emptyList())
 
-        val result = mutableListOf<UiState<CoinDetail>>()
+        val result = mutableListOf<UiState<List<Coin>>>()
 
         // Act
-        getCoinDetailUseCase("bitcoin").toList(result)
+        getCoinsUseCase().toList(result)
 
         // Assert
         assertTrue(result[0] is UiState.Loading)
-        assertTrue(result[1] is UiState.Error)
-        assertNotNull((result[1] as UiState.Error).message)
+        assertTrue(result[1] is UiState.Success)
+        assertTrue((result[1] as UiState.Success).data.isEmpty())
     }
 }
 
