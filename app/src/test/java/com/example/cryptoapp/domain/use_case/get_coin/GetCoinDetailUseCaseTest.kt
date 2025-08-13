@@ -17,13 +17,12 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.whenever
-import java.io.IOException
+import org.mockito.Mockito.`when`
+
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GetCoinDetailUseCaseTest {
 
-    // Use the StandardTestDispatcher for predictable coroutine execution
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var repository: MainRepository
     private lateinit var getCoinDetailUseCase: GetCoinDetailUseCase
@@ -31,7 +30,7 @@ class GetCoinDetailUseCaseTest {
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        repository = mock()
+        repository = mock(MainRepository::class.java) // Classic Mockito style
         getCoinDetailUseCase = GetCoinDetailUseCase(repository)
     }
 
@@ -42,7 +41,6 @@ class GetCoinDetailUseCaseTest {
 
     @Test
     fun `invoke emits Loading then Success when data is fetched`() = runTest {
-        // Arrange
         val coinId = "bitcoin"
         val coinDetailDto = CoinDetailDto(
             id = coinId,
@@ -55,14 +53,11 @@ class GetCoinDetailUseCaseTest {
             team = listOf(CoinDetailDto.Team("1", "Satoshi Nakamoto", "Founder"))
         )
 
-        whenever(repository.getCoinDetail(coinId)).thenReturn(coinDetailDto)
+        `when`(repository.getCoinDetail(coinId)).thenReturn(coinDetailDto)
 
         val result = mutableListOf<UiState<CoinDetail>>()
-
-        // Act
         getCoinDetailUseCase(coinId).toList(result)
 
-        // Assert
         assertTrue(result[0] is UiState.Loading)
         assertTrue(result[1] is UiState.Success)
         val coinDetail = (result[1] as UiState.Success).data
@@ -72,27 +67,21 @@ class GetCoinDetailUseCaseTest {
     }
 
     @Test
-    fun `invoke emits Loading then Error when IOException is thrown`() = runTest {
-        // Arrange
+    fun `invoke emits Loading then Error when RuntimeException is thrown`() = runTest {
         val coinId = "bitcoin"
 
-        whenever(repository.getCoinDetail(coinId)).thenAnswer {
-            throw IOException("No internet")
-        }
+        `when`(repository.getCoinDetail(coinId)).thenThrow(RuntimeException("No internet"))
 
         val result = mutableListOf<UiState<CoinDetail>>()
-
-        // Act
         getCoinDetailUseCase(coinId).toList(result)
 
-        // Assert
         assertTrue(result[0] is UiState.Loading)
         assertTrue(result[1] is UiState.Error)
         assertEquals(
-            "Couldn't reach server. Check your internet connection.",
+            "Something went wrong.",
             (result[1] as UiState.Error).message
         )
     }
 
-}
 
+}

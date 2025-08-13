@@ -22,7 +22,10 @@ class GetCoinDetailUseCase @Inject constructor(
             emit(UiState.Error(e.message ?: "An unknown error occurred"))
         } catch (e: IOException) {
             emit(UiState.Error("Couldn't reach server. Check your internet connection."))
+        } catch (e: Exception) {
+            emit(UiState.Error("Something went wrong."))
         }
     }
 
 }
+

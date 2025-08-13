@@ -1,19 +1,18 @@
 package com.example.cryptoapp.domain.use_case.get_coins
 
+import com.example.cryptoapp.domain.use_case.get_coin.GetCoinDetailUseCase
+
 
 import com.example.cryptoapp.common.UiState
 import com.example.cryptoapp.data.remote.dto.CoinDetailDto
 import com.example.cryptoapp.domain.model.CoinDetail
 import com.example.cryptoapp.domain.repository.MainRepository
-import com.example.cryptoapp.domain.use_case.get_coin.GetCoinDetailUseCase
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.*
 import org.junit.Test
 import org.mockito.Mockito.*
-import org.mockito.kotlin.whenever
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
@@ -40,12 +39,12 @@ class GetCoinDetailUseCaseTest {
         )
     )
 
-    private val expectedCoinDetail = coinDetailDto.toCoinDetail()
+    private val expectedCoinDetail: CoinDetail = coinDetailDto.toCoinDetail()
 
     @Test
     fun `invoke emits Loading then Success when data is retrieved`() = runTest {
         // Arrange
-        whenever(repository.getCoinDetail("bitcoin")).thenReturn(coinDetailDto)
+        `when`(repository.getCoinDetail("bitcoin")).thenReturn(coinDetailDto)
 
         val result = mutableListOf<UiState<CoinDetail>>()
 
@@ -61,7 +60,7 @@ class GetCoinDetailUseCaseTest {
     @Test
     fun `invoke emits Loading then Error when IOException is thrown`() = runTest {
         // Arrange
-        whenever(repository.getCoinDetail("bitcoin")).thenThrow(IOException("No internet"))
+        `when`(repository.getCoinDetail("bitcoin")).thenThrow(IOException("No internet"))
 
         val result = mutableListOf<UiState<CoinDetail>>()
 
@@ -80,11 +79,8 @@ class GetCoinDetailUseCaseTest {
     @Test
     fun `invoke emits Loading then Error when HttpException is thrown`() = runTest {
         // Arrange
-        whenever(repository.getCoinDetail("bitcoin")).thenThrow(
-            HttpException(
-                Response.error<Any>(404, "".toResponseBody(null))
-            )
-        )
+        val httpException = HttpException(Response.error<Any>(404, "".toResponseBody(null)))
+        `when`(repository.getCoinDetail("bitcoin")).thenThrow(httpException)
 
         val result = mutableListOf<UiState<CoinDetail>>()
 
@@ -94,7 +90,7 @@ class GetCoinDetailUseCaseTest {
         // Assert
         assertTrue(result[0] is UiState.Loading)
         assertTrue(result[1] is UiState.Error)
-        // The message might be empty or a default, so we can check if it contains some string or is not null
         assertNotNull((result[1] as UiState.Error).message)
     }
 }
+
